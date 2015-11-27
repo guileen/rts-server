@@ -7,6 +7,10 @@ var rts   = require('rts')({
 });
 
 module.exports = function(app){
+
+  require('./stat')(app)
+  require('./dashboard')(app)
+
 	app.get("/", function(req, res){
 		res.render("index",{title:"aa"})
 	});

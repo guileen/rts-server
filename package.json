@@ -2,7 +2,7 @@
   "name": "rts-server",
   "version": "0.1.0",
   "scripts": {
-    "start": "node ./bin/rts-server"
+    "start": "node-dev ./bin/rts-server"
   },
   "bin": {
     "rts-server": "./bin/rts-server"
@@ -14,7 +14,7 @@
     "ejs": "~2.3.1",
     "express": "~4.12.2",
     "morgan": "~1.5.1",
-    "redis": "^2.3.0",
+    "redis": "^2.4.1",
     "rts": "^0.4.2",
     "serve-favicon": "~2.2.0"
   }
