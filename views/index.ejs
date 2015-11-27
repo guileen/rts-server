@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  	<meta charset="utf-8">
+    <title>数据分析demo</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel="stylesheet" type="text/css" href="http://jonthornton.github.io/jquery-timepicker/jquery.timepicker.css" />
+    <link rel="stylesheet" type="text/css" href="./stylesheets/bootstrap-datepicker.css" />
+  </head>
+  <body>
+    <input type="button" value="添加表情数据" id="add"><input type="button" value="添加访问数据" id="add1">
+    <hr/>
+    <div style="width:1000px;height:500px" id="main"></div>
+    统计类型：
+    <select id="select">
+    	<option>sum</option>
+    	<option>max</option>
+    	<option>min</option>
+    	<option>avg</option>
+    </select></br></br>
+    步长：<input type="text" id="gran"></br></br>
+    起始时间：<input type="text" id="fromDate"/>
+         <input type="text" id="fromTime" /></br></br>
+    结束时间：<input type="text" id="endDate"/>
+         <input type="text" id="endTime" /></br></br>
+    <input type="button" value="查询" id="query" />
+    <hr/>
+    <h2>自定义图表</h2>
+    behavior：<input type="text" /></br></br>
+    标题：<input type="text" /></br></br>
+    <h2>设定默认值</h2>
+    统计类型：
+    <select>
+        <option>sum</option>
+        <option>max</option>
+        <option>min</option>
+        <option>avg</option>
+    </select></br></br>
+    步长：<input type="text" id="gran"></br></br>
+    y轴：<input type="text"></br></br>
+
+    <script type="text/javascript" src="http://lib.sinaapp.com/js/jquery/1.7.2/jquery.min.js"></script>
+    <script src="http://echarts.baidu.com/build/dist/echarts-all.js"></script>
+    <script src="http://jonthornton.github.io/jquery-timepicker/jquery.timepicker.js"></script>
+    <script src="./javascripts/bootstrap-datepicker.js"></script>
+    <script src="./javascripts/jquery.datepair.min.js"></script>
+    <script type="text/javascript">
+    	$(function(){
+            var myChart = echarts.init(document.getElementById('main')); 
+            draw({
+                sta:"sum",
+                gran:"5m",
+                fromDate:"",
+                endDate:""
+            });
+
+            query();
+
+            datepicker();
+
+            function datepicker(){
+                $("#fromDate,#endDate").datepicker({
+                    'format': 'm/d/yyyy',
+                    'autoclose': true
+                });
+
+                $("#fromTime,#endTime").timepicker({
+                    'showDuration': true,
+                    'timeFormat': 'g:i A'
+                });
+            }
+
+            function query(){
+                $("#add").click(function(){
+                    $.get("./setDate", {}, function(res){
+                        alert("生成数据时间为：" + res);
+                    });
+                });
+
+                $("#query").click(function(){
+                    var fromDate = Date.parse($("#fromDate").val() + " " + $("#fromTime").val());
+                    var endDate = Date.parse($("#endDate").val() + " " + $("#endTime").val());
+                    var req = {};
+                    req.sta = $("#select")[0].value;
+                    req.gran = $("#gran")[0].value;
+                    req.fromDate = fromDate || "";
+                    req.endDate = endDate || "";
+                    draw(req);
+                });
+            }
+
+            function draw(req){
+                $.post("./getDate", req, function(res){
+                    myChart.clear();
+                    myChart.setOption(getChartOption(res));
+                }, 'json');
+            }
+
+            function getChartOption(res){
+                var x = [];
+                var data = [];
+                res.data.forEach(function(item){
+                    var time = new Date(item[0]);
+                    x.push(time.getHours() + ":" + time.getMinutes());
+                    data.push(Math.round(item[1]));
+                });
+
+                var option = {
+                    // 标题
+                    title : {
+                        text: '表情支付金额',
+                        subtext: '纯属虚构'
+                    },
+                    // 鼠标悬浮信息提示
+                    tooltip : {
+                        trigger : 'axis'    // item 原点 axis 直线
+                    },
+                    // 图例
+                    legend: {
+                        data:['金额']
+                    },
+                      toolbox: {
+                          show : true,
+                          feature : {
+                              mark : {show: true},
+                              dataView : {show: true, readOnly: false},
+                              magicType : {show: true, type: ['line', 'bar']},
+                              restore : {show: true},
+                              saveAsImage : {show: true}
+                          }
+                      },
+                      calculable : true,
+                      xAxis : [
+                          {
+                              type : 'category',
+                              boundaryGap : false,
+                              data : x
+                          }
+                      ],
+                      yAxis : [
+                          {
+                              type : 'value',
+                              axisLabel : {
+                                  formatter: '{value}元'
+                              }
+                          }
+                      ],
+                      series : [
+                          {
+                              name:'金额',
+                              type:'line',
+                              data:data,
+                              markPoint : {
+                                  data : [
+                                      {type : 'max', name: '最大值'},
+                                      {type : 'min', name: '最小值'}
+                                  ]
+                              },
+                              markLine : {
+                                  data : [
+                                      {type : 'average', name: '平均值'}
+                                  ]
+                              }
+                          }
+                      ]
+                  };
+                  return option;
+            }
+    	});
+    </script>
+  </body>
+</html>
