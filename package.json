@@ -1,9 +1,11 @@
 {
-  "name": "rts-demo",
-  "version": "0.0.0",
-  "private": true,
+  "name": "rts-server",
+  "version": "0.1.0",
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/rts-server"
+  },
+  "bin": {
+    "rts-server": "./bin/rts-server"
   },
   "dependencies": {
     "body-parser": "~1.12.0",
